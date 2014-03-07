@@ -45,6 +45,7 @@ class ProductoDetailView(DetailView):
 
 def autocomplete_buscador(request):
     q = request.GET.get('q', '')
+    import ipdb; ipdb.set_trace()
     if len(q) < 3:
         return HttpResponse('')
 
@@ -57,9 +58,9 @@ def autocomplete_buscador(request):
 
     if es_num:
         productos = Producto.objects.filter(upc__startswith=q)[0:8]
+        categorias = []
     else:
-        words = q.split(' ')
-
+        words = q.split()
         palabras = Q(reduce(operator.and_,
                             (Q(descripcion__icontains=w) for w in words if len(w) > 2)))
         tiene_palabras = Producto.objects.filter(
@@ -69,6 +70,7 @@ def autocomplete_buscador(request):
                                                 flat=True)
         productos = Producto.objects.filter(Q(id__in=tiene_palabras) |
                                             Q(id__in=similares)).distinct()[0:8]
+
     context['productos'] = productos
 
     return render(request, "precios/autocomplete.html", context)
